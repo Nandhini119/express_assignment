@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>MovieApp</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <link href="css/style.css">
+</head>
+
+<body>
+    <div class="navbar navbar-default">
+        <center>
+            <h2>10 Movies to watch</h2>
+        </center>
+    </div>
+    <center class="col-sm-10">
+        <form method="post" action="" onsubmit="findMovie(event)">
+            <input type="text" placeholder="Enter the movie name" required id="moviename" />
+            <button type='submit' value="Search Movies">Search Movies</button>
+        </form>
+    </center>
+    <aside class="col-sm-2">
+        <button value="Favourites" onclick="fndisplay()">Show Favourites</button>
+    </aside>
+    </div>
+    <center>
+        <div id="heading">
+        <div>
+        <table id="movies" border="3">
+            <tbody>
+            </tbody>
+        </table>
+    </center>
+
+    <script>
+        let arr = [];
+        let set1 = new Set();
+
+        function findMovie(e) {
+            e.preventDefault(); /*this to prevent the default action in form*/
+            let movie = document.getElementById('moviename').value;
+
+            $.ajax({
+
+                url: '/search',
+                type: 'GET',
+                data: {
+                    moviename: document.getElementById('moviename').value
+                },
+                error: function() {
+                    $('#movies').html('<p>An error has occurred</p>');
+                },
+                success: function(data) {
+                    console.log(data);
+
+                    let json_obj = $.parseJSON(data); //parse JSON
+                    if(json_obj.total_results != 0)
+                    {
+                    let movieHTML = '';
+                    movieHTML += '<tr><th><center>Title</center></th><th><center>Poster</center></th><th><center>Release date</center></th></tr>';
+                    for (let i = 0; (i < json_obj.total_results && i < 20); i++) {
+                        var poster = '';
+                        if (json_obj.results[i].poster_path == null || json_obj.results[i].poster_path == undefined) {
+                            poster = "https://www.jainsusa.com/images/store/landscape/not-available.jpg";
+                        } else {
+                            poster = 'http://image.tmdb.org/t/p/w185/' + json_obj.results[i].poster_path;
+                        }
+                        let favobj = {
+                            title: json_obj.results[i].title,
+                            poster: poster,
+                            date: json_obj.results[i].release_date
+                        };
+
+                        movieHTML += '<tr>';
+                        movieHTML += '<td><center>' + json_obj.results[i].title + '</center></td>';
+                        movieHTML += '<td><center>' + '<img width = "200" height = "200" src=' + poster + '>' + '</center></td>';
+                        movieHTML += '<td><center>' + json_obj.results[i].release_date + '</center></td>';
+                        movieHTML += "<td><center><button value='" + JSON.stringify(favobj) + "' onclick='favourite(event)'>Favourite</button></center></td>";
+                        movieHTML += '</tr>';
+                    }
+                    $("#movies tbody").html(movieHTML);
+
+                }
+        
+        else
+        {
+             $('#heading').html('<p>No such movie</p>');
+        }
+
+}
+            });
+        
+}
+        function favourite(e) {
+            set1.add(e.target.value);
+        }
+
+        function fndisplay() {
+            let movieHTML = '';
+            movieHTML += '<tr><th><center>Title</center></th><th><center>Poster</center></th><th><center>Release date</center></th></tr>';
+            set1.forEach(function(element) {
+                let movobj = JSON.parse(element);
+                movieHTML += '<tr>';
+                movieHTML += '<td><center>' + movobj.title + '</center></td>';
+                movieHTML += '<td><center>' + '<img width = "200" height = "200" src=' + movobj.poster + '>' + '</center></td>';
+                movieHTML += '<td><center>' + movobj.date + '</center></td>';
+                movieHTML += '</tr>';
+                 $("#movies tbody").html(movieHTML);
+            });
+           
+           
+        }
+    </script>
+</body>
+
+</html>
