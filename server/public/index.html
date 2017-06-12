@@ -52,7 +52,7 @@
                     $('#movies').html('<p>An error has occurred</p>');
                 },
                 success: function(data) {
-                    console.log(data);
+                    
 
                     let json_obj = $.parseJSON(data); //parse JSON
                     if(json_obj.total_results != 0)
